@@ -31,7 +31,6 @@ router = APIRouter()
 class OrderCreate(BaseModel):
     user_id: int
     product_id: int
-    price_1: Decimal
     order_date: date  
     status: str
     quantity: int
@@ -45,14 +44,14 @@ class OrderOut(BaseModel):
     user_id: int
     product_id: int
     price_1: Decimal
-    order_date: date  # Dùng kiểu `date` chuẩn của Python thay vì `sqlalchemy.Date`
+    order_date: date
     status: str
     quantity: int
     total_amount: Decimal
 
     class Config:
         orm_mode = True
-        arbitrary_types_allowed = True  # Cho phép kiểu dữ liệu tùy chỉnh
+        from_attributes = True
 
 
 
@@ -83,7 +82,7 @@ async def create_order(order: OrderCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Not enough stock")
 
     # Tính toán tổng tiền
-    total_amount = order.price_1 * order.quantity
+    total_amount = product.price * order.quantity
 
     # Tạo đơn hàng
     new_order = Order(
